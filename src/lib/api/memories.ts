@@ -1,4 +1,4 @@
-import { API_ENDPOINT } from "@/config/api";
+import { api_base_url } from "@/config/api";
 import type {
   AlbumContent,
   AlbumData,
@@ -8,13 +8,13 @@ import type {
 import { getJson } from "@/lib/utils/request";
 
 export const getHighlight = () =>
-  getJson<Highlight>(`${API_ENDPOINT}/highlight`);
+  getJson<Highlight>(`${api_base_url}/highlight`);
 
 export const getAlbums = () =>
-  getJson<AlbumData[]>(`${API_ENDPOINT}/albums`);
+  getJson<AlbumData[]>(`${api_base_url}/albums`);
 
 export const getAlbumContents = (id: string) =>
-  getJson<AlbumContent>(`${API_ENDPOINT}/albums/${id}`);
+  getJson<AlbumContent>(`${api_base_url}/albums/${id}`);
 
 export const getMemoryPosts = () =>
-  getJson<MemoryPostData[]>(`${API_ENDPOINT}/posts`);
+  getJson<MemoryPostData[]>(`${api_base_url}/posts`);
