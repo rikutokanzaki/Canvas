@@ -1,5 +1,5 @@
+import { UploadForm } from "@/components/layouts/UploadForm";
+
 export default function Upload() {
-  return (
-    <div></div>
-  );
+  return <UploadForm />;
 }

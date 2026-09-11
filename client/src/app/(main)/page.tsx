@@ -13,7 +13,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="py-10 w-4/5">
+      <div id="albums" className="py-10 w-4/5 scroll-mt-20">
         <Title>{`What's New`}</Title>
         <MemoryPostField />
       </div>
