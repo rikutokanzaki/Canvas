@@ -1,14 +1,27 @@
 import Image from "next/image";
 import { MaskingTape } from "@/components/elements/MaskingTape";
 import type { MemoryPostData } from "@/types/memories";
+import { HTMLAttributes } from "react";
 
-type MemoryPostProps = MemoryPostData & {
+type MemoryPostProps = MemoryPostData & HTMLAttributes<HTMLDivElement> & {
   tapeColor?: string;
+  rotation?: number;
+  offsetY?: number;
 }
 
-export const MemoryPost = ({ imagePath, date, description, tapeColor }: MemoryPostProps) => {
+export const MemoryPost = ({
+  tapeColor,
+  imagePath,
+  date,
+  description,
+  rotation = 0,
+  offsetY = 0,
+}: MemoryPostProps) => {
   return (
-    <div className="relative w-64 p-8 mt-5 bg-white border border-gray-200 shadow-sm">
+    <div
+      className="relative w-64 p-8 mt-5 bg-white border border-gray-200 shadow-sm"
+      style={{ transform: `rotate(${rotation}deg) translateY(${offsetY}px)` }}
+    >
       <MaskingTape color={tapeColor} />
 
       <div className="flex flex-col gap-2 align-middle">
