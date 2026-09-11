@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { MaskingTape } from "@/components/elements/MaskingTape";
-import type { MemoryPostData } from "@/types/memory";
+import type { MemoryPostData } from "@/types/memories";
 
 type MemoryPostProps = MemoryPostData & {
   tapeColor?: string;

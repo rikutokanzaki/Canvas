@@ -3,7 +3,7 @@ import type {
   AlbumData,
   Highlight,
   MemoryPostData,
-} from "@/types/memory";
+} from "@/types/memories";
 
 export const fallbackHighlight: Highlight = {
   imagePath: "",
@@ -11,24 +11,48 @@ export const fallbackHighlight: Highlight = {
   date: "2025.09.09",
 };
 
-export const fallbackAlbums: AlbumData[] = [{
-  id: "randomstring",
-  thumbnailPath: "",
-  period: "2025.09-2026.09",
-  title: "日常",
-  photoCount: 40,
-}];
-
-export const fallbackAlbumContents = (id: string): AlbumContent => ({
-  id,
-  title: "日常",
-  photos: [{
+export const fallbackAlbums: AlbumData[] = [
+  {
     id: "randomstring",
-    imagePath: "",
-    description: "memory",
-    date: "2025.09.09",
-  }],
-});
+    thumbnailPath: "",
+    period: "2025.09-2026.09",
+    title: "日常",
+    photoCount: 40,
+  },
+];
+
+export const fallbackAlbumContents = (id: string): AlbumContent => (
+  {
+    id,
+    title: "日常",
+    posts: [
+      {
+        id: "randomstring",
+        imagePath: "",
+        description: "memory",
+        date: "2025.09.09",
+      },
+      {
+        id: "randomstring",
+        imagePath: "",
+        description: "memory",
+        date: "2025.09.09",
+      },
+      {
+        id: "randomstring",
+        imagePath: "",
+        description: "memory",
+        date: "2025.09.09",
+      },
+      {
+        id: "randomstring",
+        imagePath: "",
+        description: "memory",
+        date: "2025.09.09",
+      },
+    ],
+  }
+);
 
 export const fallbackPosts: MemoryPostData[] = [{
   id: "randomstring",

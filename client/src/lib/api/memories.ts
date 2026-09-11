@@ -4,7 +4,7 @@ import type {
   AlbumData,
   Highlight,
   MemoryPostData,
-} from "@/types/memory";
+} from "@/types/memories";
 import { getJson } from "@/lib/utils/request";
 
 export const getHighlight = () =>

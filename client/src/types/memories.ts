@@ -14,7 +14,7 @@ export type Highlight = {
 export type AlbumContent = {
   id: string;
   title: string;
-  photos: MemoryPostData[];
+  posts: MemoryPostData[];
 };
 
 export type AlbumData = {

@@ -97,8 +97,8 @@ export const UploadForm = () => {
         {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
 
         <div className="mt-7">
-          <label htmlFor="description" className="mb-2 block text-sm font-semibold text-stone-700">ひとこと <span className="font-normal text-stone-500">（任意）</span></label>
-          <textarea id="description" name="description" rows={4} maxLength={280} placeholder="この写真の思い出を書いてください" className="w-full rounded-md border border-stone-300 px-3 py-2.5 text-sm outline-none resize-none placeholder:text-stone-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" />
+          <label htmlFor="description" className="mb-2 block text-sm font-semibold text-stone-700">Memo <span className="font-normal text-stone-500">（任意）</span></label>
+          <textarea id="description" name="description" rows={4} maxLength={280} placeholder="この写真の思い出を書いてください" className="w-full rounded-md border-none px-3 py-2.5 text-sm outline-none resize-none placeholder:text-stone-400" />
         </div>
 
         <button type="submit" className="mt-8 w-full rounded-md bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">投稿する</button>

@@ -16,7 +16,7 @@ export default async function Albums({ params }: AlbumPageProps) {
         <Title>Album</Title>
 
         <div className="flex flex-wrap justify-center gap-6">
-          {albumContents.photos.map((value, index) => (
+          {albumContents.posts.map((value, index) => (
             <MemoryPost
               key={`${value.id}-${index}`}
               id={value.id}
