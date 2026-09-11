@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, SubmitEvent, useEffect, useRef, useState } from "react";
 
 const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
@@ -43,7 +43,7 @@ export const UploadForm = () => {
     selectFile(event.dataTransfer.files[0]);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!file) {
       setError("投稿する画像を選択してください。");

@@ -18,7 +18,7 @@ export const Header = () => {
             投稿する
           </Link>
           <Link href="/auth" className="rounded-md px-3 py-2 hover:bg-emerald-800 hover:text-amber-100">
-            ログイン
+            ログアウト
           </Link>
         </nav>
       </div>
