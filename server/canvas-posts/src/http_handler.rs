@@ -125,11 +125,11 @@ pub(crate) async fn function_handler(
 
     let response_body = serde_json::to_string(&posts)?;
 
-    let resp = Response::builder()
+    let response = Response::builder()
         .status(200)
         .header("content-type", "application/json")
         .body(response_body.into())
         .map_err(Box::new)?;
 
-    Ok(resp)
+    Ok(response)
 }
