@@ -15,7 +15,7 @@ export const Album = ({ id, thumbnailPath, period, title, photoCount }: AlbumPro
       <Link
         href={`/album/${id}`}
       >
-        <div className="pt-2 px-2 border-b border-gray-300">
+        <div className="pt-2 px-2 border-b border-gray-300 flex justify-center">
           <Image
             width={150}
             height={150}
