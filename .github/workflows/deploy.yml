@@ -1,0 +1,65 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  run-ci:
+    uses: ./.github/workflows/rust-ci.yml
+
+  run-security:
+    uses: ./.github/workflows/rust-security.yml
+
+  deploy-lambdas:
+    needs: [run-ci, run-security]
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain with Cargo Lambda
+        uses: moonrepo/setup-rust@v1
+        with:
+          bins: cargo-lambda
+
+      - name: Install Zig toolchain
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.14.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build all Lambda functions
+        run: cargo lambda build --locked --release --workspace
+
+      - name: Deploy all Lambda functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          packages="$(cargo metadata --locked --no-deps --format-version 1 | jq -r '
+            .packages[]
+            | select(any(.targets[]; any(.kind[]; . == "bin")))
+            | .name
+          ')"
+
+          while IFS= read -r package; do
+            [ -n "$package" ] || continue
+            cargo lambda deploy "$package" \
+              --manifest-path Cargo.toml \
+              --binary-name "$package"
+          done <<< "$packages"

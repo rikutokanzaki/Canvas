@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Canvas
 
-## Getting Started
+Canvas は、写真と短いメモを album として共有する Web アプリケーションです。
 
-First, run the development server:
+## 構成
+
+- `client`: Next.js / React のフロントエンド
+- `server`: Rust workspace
+- `server/canvas-albums`: album 内容を返す AWS Lambda
+- `docs`: システム設計書と機能仕様書
+
+<br>
+<div align="center">
+<img alt="system_architecture" src="/docs/img/architecture.svg">
+</div>
+<br>
+
+## 開発環境
+
+フロントエンド:
 
 ```bash
+cd client
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+バックエンド:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd server
+cargo check
+cargo test
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+DB 接続を含むローカル Lambda の実行には、[server/canvas-albums/README.md](server/canvas-albums/README.md) の環境変数と Cargo Lambda の設定が必要です。
 
-## Learn More
+## 品質確認
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd client && npm run lint && npm run build
+cd ../server && cargo fmt --all -- --check
+cargo clippy --locked --all-targets --all-features -- -D warnings
+cargo test --locked --all-targets --all-features
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+GitHub Actions では Rust の format、clippy、check、test、cargo audit を実行し、`main` への push 時に Lambda をビルド・デプロイします。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ドキュメント
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [設計書](docs/design.md)
+- [仕様書](docs/specification.md)
+- [フロントエンド README](client/README.md)
+- [バックエンド README](server/canvas-albums/README.md)
