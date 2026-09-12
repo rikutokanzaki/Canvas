@@ -9,15 +9,7 @@ Canvas は、写真と短いメモを album として共有する Web アプリ�
 - `server/canvas-albums`: album 内容を返す AWS Lambda
 - `docs`: システム設計書と機能仕様書
 
-```text
-Browser
-  │ HTTPS
-  ▼
-Next.js (client) ── GET /albums/{id} ──▶ API Gateway / Lambda
-                                             │
-                                             ▼
-                                          PostgreSQL / RDS
-```
+![system-architecture](/img/architecture.svg)
 
 ## 開発環境
 
