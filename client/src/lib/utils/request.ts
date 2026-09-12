@@ -1,5 +1,18 @@
-export const getJson = async <T>(path: string): Promise<T> => {
-  const response = await fetch(path, {
+type QueryValue = string | number | boolean | null | undefined;
+
+export const getJson = async <T>(
+  path: string,
+  params?: Record<string, QueryValue>,
+): Promise<T> => {
+  const query = params
+    ? Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+      .join("&")
+    : "";
+  const url = query ? `${path}${path.includes("?") ? "&" : "?"}${query}` : path;
+
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

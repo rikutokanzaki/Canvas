@@ -1,65 +1,175 @@
+use aws_config::BehaviorVersion;
+use aws_credential_types::provider::ProvideCredentials;
+use aws_sigv4::{
+    http_request::{sign, SignableBody, SignableRequest, SigningSettings},
+    sign::v4,
+};
 use lambda_http::{Body, Error, Request, RequestExt, Response};
+use serde::Serialize;
+use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions, PgSslMode};
+use sqlx::Row;
+use std::env;
+use std::sync::Arc;
+use std::time::{Duration, SystemTime};
 
-/// This is the main body for the function.
-/// Write your code inside it.
-/// There are some code example in the following URLs:
-/// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
-pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    // Extract some useful information from the request
-    let who = event
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("name"))
-        .unwrap_or("world");
-    let message = format!("Hello {who}, this is an AWS Lambda HTTP request");
+const RDS_CERTS: &[u8] = include_bytes!("global-bundle.pem");
 
-    // Return something that implements IntoResponse.
-    // It will be serialized to the right response event automatically by the runtime
-    let resp = Response::builder()
-        .status(200)
-        .header("content-type", "text/html")
-        .body(message.into())
-        .map_err(Box::new)?;
-    Ok(resp)
+async fn generate_rds_iam_token(
+    db_hostname: &str,
+    port: u16,
+    db_username: &str,
+) -> Result<String, Error> {
+    let config = aws_config::load_defaults(BehaviorVersion::v2026_01_12()).await;
+
+    let credentials = config
+        .credentials_provider()
+        .expect("no credentials provider found")
+        .provide_credentials()
+        .await
+        .expect("unable to load credentials");
+    let identity = credentials.into();
+    let region = config.region().unwrap().to_string();
+
+    let mut signing_settings = SigningSettings::default();
+    signing_settings.expires_in = Some(Duration::from_secs(900));
+    signing_settings.signature_location = aws_sigv4::http_request::SignatureLocation::QueryParams;
+
+    let signing_params = v4::SigningParams::builder()
+        .identity(&identity)
+        .region(&region)
+        .name("rds-db")
+        .time(SystemTime::now())
+        .settings(signing_settings)
+        .build()?;
+
+    let url = format!(
+        "https://{db_hostname}:{port}/?Action=connect&DBUser={db_user}",
+        db_hostname = db_hostname,
+        port = port,
+        db_user = db_username
+    );
+
+    let signable_request =
+        SignableRequest::new("GET", &url, std::iter::empty(), SignableBody::Bytes(&[]))
+            .expect("signable request");
+
+    let (signing_instructions, _signature) =
+        sign(signable_request, &signing_params.into())?.into_parts();
+
+    let mut url = url::Url::parse(&url).unwrap();
+    for (name, value) in signing_instructions.params() {
+        url.query_pairs_mut().append_pair(name, value);
+    }
+
+    let response = url.to_string().split_off("https://".len());
+
+    Ok(response)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use lambda_http::{Request, RequestExt};
-    use std::collections::HashMap;
+pub async fn setup_db_pool() -> Result<PgPool, Error> {
+    let db_host = env::var("DB_HOSTNAME").expect("DB_HOSTNAME must be set");
+    let db_port = env::var("DB_PORT")
+        .expect("DB_PORT must be set")
+        .parse::<u16>()
+        .expect("PORT must be a valid number");
+    let db_name = env::var("DB_NAME").expect("DB_NAME must be set");
+    let db_user_name = env::var("DB_USERNAME").expect("DB_USERNAME must be set");
 
-    #[tokio::test]
-    async fn test_generic_http_handler() {
-        let request = Request::default();
+    let token = generate_rds_iam_token(&db_host, db_port, &db_user_name).await?;
 
-        let response = function_handler(request).await.unwrap();
-        assert_eq!(response.status(), 200);
+    let opts = PgConnectOptions::new()
+        .host(&db_host)
+        .port(db_port)
+        .username(&db_user_name)
+        .password(&token)
+        .database(&db_name)
+        .ssl_root_cert_from_pem(RDS_CERTS.to_vec())
+        .ssl_mode(PgSslMode::Require);
 
-        let body_bytes = response.body().to_vec();
-        let body_string = String::from_utf8(body_bytes).unwrap();
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect_with(opts)
+        .await?;
 
-        assert_eq!(
-            body_string,
-            "Hello world, this is an AWS Lambda HTTP request"
-        );
-    }
+    Ok(pool)
+}
 
-    #[tokio::test]
-    async fn test_http_handler_with_query_string() {
-        let mut query_string_parameters: HashMap<String, String> = HashMap::new();
-        query_string_parameters.insert("name".into(), "canvas-albums".into());
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AlbumContent {
+    id: String,
+    title: String,
+    posts: Vec<MemoryPost>,
+}
 
-        let request = Request::default().with_query_string_parameters(query_string_parameters);
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MemoryPost {
+    id: String,
+    image_path: String,
+    description: String,
+    date: String,
+}
 
-        let response = function_handler(request).await.unwrap();
-        assert_eq!(response.status(), 200);
+pub(crate) async fn function_handler(
+    event: Request,
+    pool: Arc<PgPool>,
+) -> Result<Response<Body>, Error> {
+    let album_id = event
+        .path_parameters_ref()
+        .and_then(|params| params.first("id"))
+        .map(str::to_owned);
 
-        let body_bytes = response.body().to_vec();
-        let body_string = String::from_utf8(body_bytes).unwrap();
+    let Some(album_id) = album_id else {
+        return Ok(Response::builder()
+            .status(400)
+            .header("content-type", "application/json")
+            .body(r#"{"error":"album id is required"}"#.into())
+            .map_err(Box::new)?);
+    };
 
-        assert_eq!(
-            body_string,
-            "Hello canvas-albums, this is an AWS Lambda HTTP request"
-        );
-    }
+    let album = sqlx::query("SELECT id::text AS id, title FROM albums WHERE id::text = $1")
+        .bind(&album_id)
+        .fetch_optional(&*pool)
+        .await?;
+
+    let Some(album) = album else {
+        return Ok(Response::builder()
+            .status(404)
+            .header("content-type", "application/json")
+            .body(r#"{"error":"album not found"}"#.into())
+            .map_err(Box::new)?);
+    };
+
+    let posts = sqlx::query(
+        "SELECT id::text AS id, image_path, description, date::text AS date
+         FROM posts
+         WHERE album_id::text = $1
+         ORDER BY date DESC, id",
+    )
+    .bind(&album_id)
+    .fetch_all(&*pool)
+    .await?
+    .into_iter()
+    .map(|row| MemoryPost {
+        id: row.get("id"),
+        image_path: row.get("image_path"),
+        description: row.get("description"),
+        date: row.get("date"),
+    })
+    .collect();
+
+    let response_body = serde_json::to_string(&AlbumContent {
+        id: album.get("id"),
+        title: album.get("title"),
+        posts,
+    })?;
+
+    let resp = Response::builder()
+        .status(200)
+        .header("content-type", "application/json")
+        .body(response_body.into())
+        .map_err(Box::new)?;
+
+    Ok(resp)
 }

@@ -14,7 +14,7 @@ export const getAlbums = () =>
   getJson<AlbumData[]>(`${api_base_url}/albums`);
 
 export const getAlbumContents = (id: string) =>
-  getJson<AlbumContent>(`${api_base_url}/albums/${id}`);
+  getJson<AlbumContent>(`${api_base_url}/albums`, { id });
 
 export const getMemoryPosts = () =>
   getJson<MemoryPostData[]>(`${api_base_url}/posts`);
