@@ -4,7 +4,7 @@ use aws_sigv4::{
     http_request::{sign, SignableBody, SignableRequest, SigningSettings},
     sign::v4,
 };
-use lambda_http::{Body, Error, Request, RequestExt, Response};
+use lambda_http::{Body, Error, Request, Response};
 use serde::Serialize;
 use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions, PgSslMode};
 use sqlx::Row;
@@ -96,14 +96,6 @@ pub async fn setup_db_pool() -> Result<PgPool, Error> {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct AlbumContent {
-    id: String,
-    title: String,
-    posts: Vec<MemoryPost>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
 struct MemoryPost {
     id: String,
     image_path: String,
@@ -112,42 +104,14 @@ struct MemoryPost {
 }
 
 pub(crate) async fn function_handler(
-    event: Request,
+    _event: Request,
     pool: Arc<PgPool>,
 ) -> Result<Response<Body>, Error> {
-    let album_id = event
-        .path_parameters_ref()
-        .and_then(|params| params.first("id"))
-        .map(str::to_owned);
-
-    let Some(album_id) = album_id else {
-        return Ok(Response::builder()
-            .status(400)
-            .header("content-type", "application/json")
-            .body(r#"{"error":"album id is required"}"#.into())
-            .map_err(Box::new)?);
-    };
-
-    let album = sqlx::query("SELECT id::text AS id, title FROM albums WHERE id::text = $1")
-        .bind(&album_id)
-        .fetch_optional(&*pool)
-        .await?;
-
-    let Some(album) = album else {
-        return Ok(Response::builder()
-            .status(404)
-            .header("content-type", "application/json")
-            .body(r#"{"error":"album not found"}"#.into())
-            .map_err(Box::new)?);
-    };
-
-    let posts = sqlx::query(
+    let posts: Vec<MemoryPost> = sqlx::query(
         "SELECT id::text AS id, image_path, description, date::text AS date
          FROM posts
-         WHERE album_id::text = $1
-         ORDER BY date DESC, id",
+         ORDER BY date DESC, id DESC",
     )
-    .bind(&album_id)
     .fetch_all(&*pool)
     .await?
     .into_iter()
@@ -159,11 +123,7 @@ pub(crate) async fn function_handler(
     })
     .collect();
 
-    let response_body = serde_json::to_string(&AlbumContent {
-        id: album.get("id"),
-        title: album.get("title"),
-        posts,
-    })?;
+    let response_body = serde_json::to_string(&posts)?;
 
     let response = Response::builder()
         .status(200)
