@@ -608,7 +608,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "canvas-prod-post-memories"
+name = "canvas-prod-post-memory"
 version = "0.1.0"
 dependencies = [
  "aws-config",

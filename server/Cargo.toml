@@ -3,6 +3,6 @@ members = [
   "canvas-prod-fetch-albums",
   "canvas-prod-fetch-highlight",
   "canvas-prod-fetch-memories",
-  "canvas-prod-post-memories",
+  "canvas-prod-post-memory",
 ]
 resolver = "2"
