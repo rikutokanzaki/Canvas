@@ -1,6 +1,6 @@
 import { Title } from "@/components/elements/Title";
 import { HighlightField } from "@/components/layouts/HighlightField";
-import { MemoryPostField } from "@/components/layouts/MemoryPostField";
+import { MemoryField } from "@/components/layouts/MemoryField";
 import { AlbumField } from "@/components/layouts/AlbumField";
 
 export default function Home() {
@@ -15,7 +15,7 @@ export default function Home() {
 
       <div id="albums" className="py-10 w-4/5 scroll-mt-20">
         <Title>{`What's New`}</Title>
-        <MemoryPostField />
+        <MemoryField />
       </div>
 
       <div className="py-10 w-4/5">

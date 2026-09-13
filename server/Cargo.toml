@@ -1,3 +1,8 @@
 [workspace]
-members = ["canvas-albums", "canvas-highlight", "canvas-posts"]
+members = [
+  "canvas-prod-fetch-albums",
+  "canvas-prod-fetch-highlight",
+  "canvas-prod-fetch-memories",
+  "canvas-prod-post-memories",
+]
 resolver = "2"

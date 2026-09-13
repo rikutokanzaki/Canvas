@@ -71,7 +71,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "canvas-albums"
+name = "canvas-prod-fetch-albums"
 version = "0.1.0"
 dependencies = [
  "lambda_http",

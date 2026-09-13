@@ -6,7 +6,7 @@ Canvas は、写真と短いメモを album として共有する Web アプリ�
 
 - `client`: Next.js / React のフロントエンド
 - `server`: Rust workspace
-- `server/canvas-albums`: album 内容を返す AWS Lambda
+- `server/fetch-albums`: album 内容を返す AWS Lambda
 - `docs`: システム設計書と機能仕様書
 
 <br>
@@ -33,7 +33,7 @@ cargo check
 cargo test
 ```
 
-DB 接続を含むローカル Lambda の実行には、[server/canvas-albums/README.md](server/canvas-albums/README.md) の環境変数と Cargo Lambda の設定が必要です。
+DB 接続を含むローカル Lambda の実行には、[server/fetch-albums/README.md](server/fetch-albums/README.md) の環境変数と Cargo Lambda の設定が必要です。
 
 ## 品質確認
 
@@ -51,4 +51,4 @@ GitHub Actions では Rust の format、clippy、check、test、cargo audit を�
 - [設計書](docs/design.md)
 - [仕様書](docs/specification.md)
 - [フロントエンド README](client/README.md)
-- [バックエンド README](server/canvas-albums/README.md)
+- [バックエンド README](server/fetch-albums/README.md)

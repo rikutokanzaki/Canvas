@@ -99,5 +99,5 @@ posts(id, album_id, image_path, description, date)
 
 - `GET /highlight`
 - `GET /albums`
-- `GET /posts`
+- `GET /memories`
 - upload に関する POST API

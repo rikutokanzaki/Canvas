@@ -2,13 +2,13 @@ import {
   getAlbumContents,
   getAlbums,
   getHighlight,
-  getMemoryPosts,
+  getMemories,
 } from "@/lib/api/memories";
 import {
   fallbackAlbumContents,
   fallbackAlbums,
   fallbackHighlight,
-  fallbackPosts,
+  fallbackMemories,
 } from "@/lib/fallbacks/memories";
 import { withFallback } from "@/lib/utils/request";
 
@@ -25,5 +25,5 @@ export const fetchAlbumContents = (id: string) =>
     "album contents",
   );
 
-export const fetchMemoryPosts = () =>
-  withFallback(getMemoryPosts, fallbackPosts, "posts");
+export const fetchMemories = () =>
+  withFallback(getMemories, fallbackMemories, "memories");

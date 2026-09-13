@@ -20,7 +20,6 @@ async fn generate_rds_iam_token(
     db_username: &str,
 ) -> Result<String, Error> {
     let config = aws_config::load_defaults(BehaviorVersion::v2026_01_12()).await;
-
     let credentials = config
         .credentials_provider()
         .expect("no credentials provider found")
@@ -29,8 +28,8 @@ async fn generate_rds_iam_token(
         .expect("unable to load credentials");
     let identity = credentials.into();
     let region = config.region().unwrap().to_string();
-
     let mut signing_settings = SigningSettings::default();
+
     signing_settings.expires_in = Some(Duration::from_secs(900));
     signing_settings.signature_location = aws_sigv4::http_request::SignatureLocation::QueryParams;
 
@@ -96,7 +95,8 @@ pub async fn setup_db_pool() -> Result<PgPool, Error> {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct Highlight {
+struct MemoryPost {
+    id: String,
     image_path: String,
     description: String,
     date: String,
@@ -106,28 +106,23 @@ pub(crate) async fn function_handler(
     _event: Request,
     pool: Arc<PgPool>,
 ) -> Result<Response<Body>, Error> {
-    let post = sqlx::query(
-        "SELECT image_path, description, date::text AS date
+    let posts: Vec<MemoryPost> = sqlx::query(
+        "SELECT id::text AS id, image_path, description, date::text AS date
          FROM posts
-         ORDER BY date DESC, id DESC
-         LIMIT 1",
+         ORDER BY date DESC, id DESC",
     )
-    .fetch_optional(&*pool)
-    .await?;
+    .fetch_all(&*pool)
+    .await?
+    .into_iter()
+    .map(|row| MemoryPost {
+        id: row.get("id"),
+        image_path: row.get("image_path"),
+        description: row.get("description"),
+        date: row.get("date"),
+    })
+    .collect();
 
-    let Some(post) = post else {
-        return Ok(Response::builder()
-            .status(404)
-            .header("content-type", "application/json")
-            .body(r#"{"error":"highlight not found"}"#.into())
-            .map_err(Box::new)?);
-    };
-
-    let response_body = serde_json::to_string(&Highlight {
-        image_path: post.get("image_path"),
-        description: post.get("description"),
-        date: post.get("date"),
-    })?;
+    let response_body = serde_json::to_string(&posts)?;
 
     let response = Response::builder()
         .status(200)

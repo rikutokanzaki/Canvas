@@ -4,13 +4,15 @@ use aws_sigv4::{
     http_request::{sign, SignableBody, SignableRequest, SigningSettings},
     sign::v4,
 };
-use lambda_http::{Body, Error, Request, RequestExt, Response};
-use serde::Serialize;
+use lambda_http::{Body, Error, Request, Response};
+use serde::{Deserialize, Serialize};
 use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions, PgSslMode};
 use sqlx::Row;
-use std::env;
-use std::sync::Arc;
-use std::time::{Duration, SystemTime};
+use std::{
+    env,
+    sync::Arc,
+    time::{Duration, SystemTime},
+};
 
 const RDS_CERTS: &[u8] = include_bytes!("global-bundle.pem");
 
@@ -20,7 +22,6 @@ async fn generate_rds_iam_token(
     db_username: &str,
 ) -> Result<String, Error> {
     let config = aws_config::load_defaults(BehaviorVersion::v2026_01_12()).await;
-
     let credentials = config
         .credentials_provider()
         .expect("no credentials provider found")
@@ -29,8 +30,8 @@ async fn generate_rds_iam_token(
         .expect("unable to load credentials");
     let identity = credentials.into();
     let region = config.region().unwrap().to_string();
-
     let mut signing_settings = SigningSettings::default();
+
     signing_settings.expires_in = Some(Duration::from_secs(900));
     signing_settings.signature_location = aws_sigv4::http_request::SignatureLocation::QueryParams;
 
@@ -67,44 +68,35 @@ async fn generate_rds_iam_token(
 }
 
 pub async fn setup_db_pool() -> Result<PgPool, Error> {
-    let db_host = env::var("DB_HOSTNAME").expect("DB_HOSTNAME must be set");
-    let db_port = env::var("DB_PORT")
-        .expect("DB_PORT must be set")
-        .parse::<u16>()
-        .expect("PORT must be a valid number");
-    let db_name = env::var("DB_NAME").expect("DB_NAME must be set");
-    let db_user_name = env::var("DB_USERNAME").expect("DB_USERNAME must be set");
-
-    let token = generate_rds_iam_token(&db_host, db_port, &db_user_name).await?;
-
-    let opts = PgConnectOptions::new()
-        .host(&db_host)
-        .port(db_port)
-        .username(&db_user_name)
+    let host = env::var("DB_HOSTNAME")?;
+    let port = env::var("DB_PORT")?.parse::<u16>()?;
+    let database = env::var("DB_NAME")?;
+    let username = env::var("DB_USERNAME")?;
+    let token = generate_rds_iam_token(&host, port, &username).await?;
+    let options = PgConnectOptions::new()
+        .host(&host)
+        .port(port)
+        .username(&username)
         .password(&token)
-        .database(&db_name)
+        .database(&database)
         .ssl_root_cert_from_pem(RDS_CERTS.to_vec())
         .ssl_mode(PgSslMode::Require);
-
-    let pool = PgPoolOptions::new()
+    Ok(PgPoolOptions::new()
         .max_connections(5)
-        .connect_with(opts)
-        .await?;
+        .connect_with(options)
+        .await?)
+}
 
-    Ok(pool)
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CreateMemory {
+    image_path: String,
+    description: String,
 }
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct AlbumContent {
-    id: String,
-    title: String,
-    posts: Vec<MemoryPost>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct MemoryPost {
+struct Memory {
     id: String,
     image_path: String,
     description: String,
@@ -115,61 +107,31 @@ pub(crate) async fn function_handler(
     event: Request,
     pool: Arc<PgPool>,
 ) -> Result<Response<Body>, Error> {
-    let album_id = event
-        .path_parameters_ref()
-        .and_then(|params| params.first("id"))
-        .map(str::to_owned);
+    if event.method() != "POST" {
+        return response(405, r#"{"error":"method not allowed"}"#);
+    }
 
-    let Some(album_id) = album_id else {
-        return Ok(Response::builder()
-            .status(400)
-            .header("content-type", "application/json")
-            .body(r#"{"error":"album id is required"}"#.into())
-            .map_err(Box::new)?);
-    };
+    let input: CreateMemory = serde_json::from_slice(event.body().as_ref())?;
+    if input.image_path.is_empty() {
+        return response(400, r#"{"error":"imagePath is required"}"#);
+    }
 
-    let album = sqlx::query("SELECT id::text AS id, title FROM albums WHERE id::text = $1")
-        .bind(&album_id)
-        .fetch_optional(&*pool)
-        .await?;
-
-    let Some(album) = album else {
-        return Ok(Response::builder()
-            .status(404)
-            .header("content-type", "application/json")
-            .body(r#"{"error":"album not found"}"#.into())
-            .map_err(Box::new)?);
-    };
-
-    let posts = sqlx::query(
-        "SELECT id::text AS id, image_path, description, date::text AS date
-         FROM posts
-         WHERE album_id::text = $1
-         ORDER BY date DESC, id",
-    )
-    .bind(&album_id)
-    .fetch_all(&*pool)
-    .await?
-    .into_iter()
-    .map(|row| MemoryPost {
+    let row = sqlx::query("INSERT INTO posts (image_path, description, date) VALUES ($1, $2, CURRENT_DATE) RETURNING id::text AS id, image_path, description, date::text AS date")
+        .bind(input.image_path).bind(input.description).fetch_one(&*pool).await?;
+    let memory = Memory {
         id: row.get("id"),
         image_path: row.get("image_path"),
         description: row.get("description"),
         date: row.get("date"),
-    })
-    .collect();
+    };
 
-    let response_body = serde_json::to_string(&AlbumContent {
-        id: album.get("id"),
-        title: album.get("title"),
-        posts,
-    })?;
+    response(201, &serde_json::to_string(&memory)?)
+}
 
-    let response = Response::builder()
-        .status(200)
+fn response(status: u16, body: &str) -> Result<Response<Body>, Error> {
+    Ok(Response::builder()
+        .status(status)
         .header("content-type", "application/json")
-        .body(response_body.into())
-        .map_err(Box::new)?;
-
-    Ok(response)
+        .body(body.to_owned().into())
+        .map_err(Box::new)?)
 }

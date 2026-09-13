@@ -1,6 +1,6 @@
 # Introduction
 
-canvas-highlight is a Rust project that implements an AWS Lambda function in Rust.
+fetch-memories is a Rust project that implements an AWS Lambda function in Rust.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ For generic events, where you define the event data structure, you can create a 
 
 ```json
 {
-    "command": "test"
+  "command": "test"
 }
 ```
 

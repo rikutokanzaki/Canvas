@@ -23,7 +23,7 @@ flowchart LR
 ```text
 client/                    Next.js アプリケーション
 server/                    Rust workspace
-  canvas-albums/           album API Lambda
+  fetch-albums/           album API Lambda
 docs/                      設計書・仕様書
 .github/workflows/         CI、security audit、deploy
 ```

@@ -26,6 +26,22 @@ export const getJson = async <T>(
   return await response.json() as T;
 };
 
+export const postJson = async <T>(path: string, body: unknown): Promise<T> => {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return await response.json() as T;
+};
+
 export const withFallback = async <T>(
   request: () => Promise<T>,
   fallback: T,

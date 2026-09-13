@@ -563,7 +563,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "canvas-albums"
+name = "canvas-prod-fetch-albums"
 version = "0.1.0"
 dependencies = [
  "aws-config",
@@ -578,7 +578,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "canvas-highlight"
+name = "canvas-prod-fetch-highlight"
 version = "0.1.0"
 dependencies = [
  "aws-config",
@@ -593,7 +593,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "canvas-posts"
+name = "canvas-prod-fetch-memories"
+version = "0.1.0"
+dependencies = [
+ "aws-config",
+ "aws-credential-types",
+ "aws-sigv4",
+ "lambda_http",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "canvas-prod-post-memories"
 version = "0.1.0"
 dependencies = [
  "aws-config",

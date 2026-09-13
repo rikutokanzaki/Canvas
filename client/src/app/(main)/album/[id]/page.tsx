@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Title } from "@/components/elements/Title";
-import { MemoryPost } from "@/components/layouts/MemoryPost";
+import { Memory } from "@/components/layouts/Memory";
 import { fetchAlbumContents } from "@/lib/fetchMemories";
 import { randomColor } from "@/lib/utils/color";
 import { randomNumber } from "@/lib/utils/number";
@@ -29,7 +29,7 @@ export default async function Albums({ params }: AlbumPageProps) {
             />
             <div className="relative z-10 flex flex-wrap justify-center gap-6">
               {albumContents.posts.map((value, index) => (
-                <MemoryPost
+                <Memory
                   key={`${value.id}-${index}`}
                   id={value.id}
                   tapeColor={randomColor()}

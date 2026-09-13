@@ -1,8 +1,13 @@
-export type MemoryPostData = {
+export type Memory = {
   id: string;
   imagePath: string;
   description: string;
   date: string;
+};
+
+export type CreateMemoryInput = {
+  imagePath: string;
+  description: string;
 };
 
 export type Highlight = {
@@ -14,7 +19,7 @@ export type Highlight = {
 export type AlbumContent = {
   id: string;
   title: string;
-  posts: MemoryPostData[];
+  posts: Memory[];
 };
 
 export type AlbumData = {
