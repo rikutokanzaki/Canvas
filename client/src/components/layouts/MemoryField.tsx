@@ -1,5 +1,5 @@
-import { fetchMemories } from "@/lib/fetchMemories";
 import { Memory } from "@/components/layouts/Memory";
+import { fetchMemories } from "@/lib/fetchMemories";
 
 export const MemoryField = async () => {
   const memories = await fetchMemories();

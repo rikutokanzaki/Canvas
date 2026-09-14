@@ -5,6 +5,7 @@ import { fetchAlbumContents } from "@/lib/fetchMemories";
 import { randomColor } from "@/lib/utils/color";
 import { randomNumber } from "@/lib/utils/number";
 
+
 type AlbumPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -14,12 +15,12 @@ export default async function Albums({ params }: AlbumPageProps) {
   const albumContents = await fetchAlbumContents(id);
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center">
+    <div className="flex flex-1 flex-col items-center justify-center">
       <div className="mt-10 w-4/5">
         <Title>Album</Title>
 
-        <div className="mt-5 p-6 bg-amber-950 shadow-2xl overflow-hidden">
-          <div className="relative py-25 flex flex-wrap justify-center gap-6 overflow-hidden border-2">
+        <div className="mt-5 overflow-hidden bg-amber-950 p-6 shadow-2xl">
+          <div className="relative flex flex-wrap justify-center gap-6 overflow-hidden border-2 bg-white py-25">
             <Image
               src="/paper.png"
               alt="paper-background"

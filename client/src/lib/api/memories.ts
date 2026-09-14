@@ -1,4 +1,5 @@
 import { api_base_url } from "@/config/api";
+import { getJson, postJson } from "@/lib/utils/request";
 import type {
   AlbumContent,
   AlbumData,
@@ -6,7 +7,6 @@ import type {
   Highlight,
   Memory,
 } from "@/types/memories";
-import { getJson, postJson } from "@/lib/utils/request";
 
 export const getHighlight = () =>
   getJson<Highlight>(`${api_base_url}/highlight`);
