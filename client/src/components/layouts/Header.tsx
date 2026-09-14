@@ -3,7 +3,7 @@ import Link from "next/link";
 export const Header = () => {
   return (
     <header className="sticky top-0 z-10 h-16 border-b border-emerald-800 bg-emerald-900 text-white shadow-sm">
-      <div className="m-auto w-11/12 h-full flex justify-between items-center">
+      <div className="m-auto flex h-full w-11/12 items-center justify-between">
         <Link href="/" className="text-xl font-semibold tracking-wide hover:text-amber-200">
           Canvas
         </Link>

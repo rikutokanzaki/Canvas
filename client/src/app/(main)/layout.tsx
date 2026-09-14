@@ -1,5 +1,6 @@
-import "@/app/globals.css";
 import { Header } from "@/components/layouts/Header";
+
+import "@/app/globals.css";
 
 export default function MainLayout({ children }: LayoutProps<"/">) {
   return (
@@ -8,7 +9,7 @@ export default function MainLayout({ children }: LayoutProps<"/">) {
       className="h-full antialiased"
     >
       <Header />
-      <div className="min-h-full flex flex-col">{children}</div>
+      <div className="flex min-h-full flex-col">{children}</div>
     </div>
   );
 }

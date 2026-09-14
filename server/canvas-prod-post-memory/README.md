@@ -1,6 +1,6 @@
 # Introduction
 
-canvas-posts is a Rust project that implements an AWS Lambda function in Rust.
+post-memory is a Rust project that implements an AWS Lambda function in Rust.
 
 ## Prerequisites
 

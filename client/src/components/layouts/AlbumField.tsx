@@ -1,5 +1,5 @@
-import { fetchAlbums } from "@/lib/fetchMemories";
 import { Album } from "@/components/layouts/Album";
+import { fetchAlbums } from "@/lib/fetchMemories";
 
 export const AlbumField = async () => {
   const albums = await fetchAlbums();

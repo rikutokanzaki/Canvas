@@ -1,7 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { ChangeEvent, DragEvent, SubmitEvent, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+
+import { postMemory } from "@/lib/api/memories";
 
 const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
@@ -12,6 +14,7 @@ export const UploadForm = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -43,14 +46,33 @@ export const UploadForm = () => {
     selectFile(event.dataTransfer.files[0]);
   };
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!file) {
       setError("投稿する画像を選択してください。");
       return;
     }
     setError(null);
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const imagePath = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("画像の読み込みに失敗しました"));
+        reader.readAsDataURL(file);
+      });
+      const description = new FormData(event.currentTarget).get("description");
+      await postMemory({
+        imagePath,
+        description: typeof description === "string" ? description : "",
+      });
+      setSubmitted(true);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "投稿に失敗しました");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const clearFile = () => {
@@ -98,11 +120,11 @@ export const UploadForm = () => {
 
         <div className="mt-7">
           <label htmlFor="description" className="mb-2 block text-sm font-semibold text-stone-700">Memo <span className="font-normal text-stone-500">（任意）</span></label>
-          <textarea id="description" name="description" rows={4} maxLength={280} placeholder="この写真の思い出を書いてください" className="w-full rounded-md border-none px-3 py-2.5 text-sm outline-none resize-none placeholder:text-stone-400" />
+          <textarea id="description" name="description" rows={4} maxLength={280} placeholder="この写真の思い出を書いてください" className="w-full resize-none rounded-md border-none px-3 py-2.5 text-sm outline-none placeholder:text-stone-400" />
         </div>
 
-        <button type="submit" className="mt-8 w-full rounded-md bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">投稿する</button>
-        {submitted && <p role="status" className="mt-4 rounded-md bg-emerald-50 p-3 text-center text-sm text-emerald-800">投稿の準備ができました。アップロード先のAPIを接続すると送信できます。</p>}
+        <button type="submit" disabled={isSubmitting} className="mt-8 w-full rounded-md bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60">{isSubmitting ? "投稿中…" : "投稿する"}</button>
+        {submitted && <p role="status" className="mt-4 rounded-md bg-emerald-50 p-3 text-center text-sm text-emerald-800">投稿しました。</p>}
       </form>
     </main>
   );

@@ -1,11 +1,12 @@
 import { api_base_url } from "@/config/api";
+import { getJson, postJson } from "@/lib/utils/request";
 import type {
   AlbumContent,
   AlbumData,
+  CreateMemoryInput,
   Highlight,
-  MemoryPostData,
+  Memory,
 } from "@/types/memories";
-import { getJson } from "@/lib/utils/request";
 
 export const getHighlight = () =>
   getJson<Highlight>(`${api_base_url}/highlight`);
@@ -16,5 +17,8 @@ export const getAlbums = () =>
 export const getAlbumContents = (id: string) =>
   getJson<AlbumContent>(`${api_base_url}/albums/${encodeURIComponent(id)}`);
 
-export const getMemoryPosts = () =>
-  getJson<MemoryPostData[]>(`${api_base_url}/posts`);
+export const getMemories = () =>
+  getJson<Memory[]>(`${api_base_url}/memories`);
+
+export const postMemory = (memory: CreateMemoryInput) =>
+  postJson<Memory>(`${api_base_url}/memories`, memory);

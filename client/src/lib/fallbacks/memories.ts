@@ -2,7 +2,7 @@ import type {
   AlbumContent,
   AlbumData,
   Highlight,
-  MemoryPostData,
+  Memory,
 } from "@/types/memories";
 
 export const fallbackHighlight: Highlight = {
@@ -54,7 +54,7 @@ export const fallbackAlbumContents = (id: string): AlbumContent => (
   }
 );
 
-export const fallbackPosts: MemoryPostData[] = [{
+export const fallbackMemories: Memory[] = [{
   id: "randomstring",
   imagePath: "/paper.png",
   description: "memory",

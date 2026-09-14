@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 type AlbumProps = {
   id: string;
@@ -15,7 +15,7 @@ export const Album = ({ id, thumbnailPath, period, title, photoCount }: AlbumPro
       <Link
         href={`/album/${id}`}
       >
-        <div className="pt-2 px-2 border-b border-gray-300 flex justify-center">
+        <div className="flex justify-center border-b border-gray-300 px-2 pt-2">
           <Image
             width={150}
             height={150}

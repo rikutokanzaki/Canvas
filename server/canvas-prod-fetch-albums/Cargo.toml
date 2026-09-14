@@ -1,5 +1,5 @@
 [package]
-name = "canvas-albums"
+name = "canvas-prod-fetch-albums"
 version = "0.1.0"
 edition = "2021"
 

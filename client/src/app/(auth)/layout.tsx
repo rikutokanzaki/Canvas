@@ -6,7 +6,7 @@ export default function MainLayout({ children }: LayoutProps<"/">) {
       lang="ja"
       className="h-full antialiased"
     >
-      <div className="min-h-full flex flex-col">{children}</div>
+      <div className="flex min-h-full flex-col">{children}</div>
     </div>
   );
 }
