@@ -137,4 +137,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cargo-audit-report
-          path: audit-report.json
+          path: server/audit-report.json
