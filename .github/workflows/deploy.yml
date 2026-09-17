@@ -11,10 +11,10 @@ permissions:
 
 jobs:
   run-ci:
-    uses: ./.github/workflows/rust-ci.yml
+    uses: ./.github/workflows/ci.yml
 
   run-security:
-    uses: ./.github/workflows/rust-security.yml
+    uses: ./.github/workflows/security.yml
 
   deploy-lambdas:
     needs: [run-ci, run-security]
