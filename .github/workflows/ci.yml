@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: rust-ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -27,6 +27,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            server
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@master

@@ -13,11 +13,11 @@ jobs:
   run-ci:
     uses: ./.github/workflows/ci.yml
 
-  run-security:
-    uses: ./.github/workflows/security.yml
+  run-rust-security:
+    uses: ./.github/workflows/rust-security.yml
 
   deploy-lambdas:
-    needs: [run-ci, run-security]
+    needs: [run-ci, run-rust-security]
     runs-on: ubuntu-latest
 
     defaults:
@@ -26,7 +26,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            server
 
       - name: Install Rust toolchain with Cargo Lambda
         uses: moonrepo/setup-rust@v1
