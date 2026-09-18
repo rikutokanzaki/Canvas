@@ -27,6 +27,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            server
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@master

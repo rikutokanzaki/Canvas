@@ -26,7 +26,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            server
 
       - name: Install Rust toolchain with Cargo Lambda
         uses: moonrepo/setup-rust@v1
