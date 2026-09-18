@@ -13,11 +13,11 @@ jobs:
   run-ci:
     uses: ./.github/workflows/ci.yml
 
-  run-security:
-    uses: ./.github/workflows/security.yml
+  run-rust-security:
+    uses: ./.github/workflows/rust-security.yml
 
   deploy-lambdas:
-    needs: [run-ci, run-security]
+    needs: [run-ci, run-rust-security]
     runs-on: ubuntu-latest
 
     defaults:
