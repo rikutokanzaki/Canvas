@@ -1,6 +1,5 @@
-import { HTMLAttributes } from "react";
 import Image from "next/image";
-
+import { HTMLAttributes } from "react";
 import { MaskingTape } from "@/components/elements/MaskingTape";
 import type { Memory as MemoryData } from "@/types/memories";
 
