@@ -1,8 +1,7 @@
 "use client";
 
-import { ChangeEvent, DragEvent, SubmitEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-
+import { ChangeEvent, DragEvent, SubmitEvent, useEffect, useRef, useState } from "react";
 import { postMemory } from "@/lib/api/memories";
 
 const acceptedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
